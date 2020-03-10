@@ -208,9 +208,11 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
+    var screenHeight = MediaQuery.of(context).size.height;
+
     var chartWidget = new Padding(
       padding: new EdgeInsets.fromLTRB(20, 10, 20, 30),
-      child: new SizedBox(height: 200.0, child: getChart()),
+      child: new SizedBox(height: screenHeight / 4.0, child: getChart()),
     );
 
     return new Scaffold(
@@ -219,7 +221,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: new Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             chartWidget,
             Padding(
@@ -230,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     RaisedButton.icon(
                       icon: Icon(Icons.border_outer),
                       onPressed: onLineChartFillSwitch,
-                      label: Text(''),
+                      label: Text('fill'),
                     ),
                     RaisedButton.icon(
                       icon: Icon(Icons.show_chart),
