@@ -3,6 +3,7 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:intl/intl.dart';
 import 'dataClasses/ClicksPerYear.dart';
 import 'dataClasses/LinearSales.dart';
+import 'package:flutterapp/MockDataGenerator.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -20,6 +21,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var isCurvedChartFilled = true;
   var isVertical = true;
   var isStacked = false;
+  var isPieChart = false;
   var animateChart = true;
 
   Map<String, ClicksPerYear> barChartData;
@@ -27,39 +29,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    barChartData = {
-      '2015': ClicksPerYear('2015', 10, Colors.red),
-      '2016': ClicksPerYear('2016', 7, Colors.orange),
-      '2017': ClicksPerYear('2017', 42, Colors.yellow),
-      '$currentTime': ClicksPerYear('$currentTime', 0, Colors.green),
-    };
+    barChartData = MockDataGenerator.mockBarChartData();
 
-    curveChartData = {
-      'myFakeDesktopData': [
-        new LinearSales(0, 5),
-        new LinearSales(1, 75),
-        new LinearSales(2, 100),
-        new LinearSales(3, 75),
-      ],
-      'myFakeTabletData': [
-        new LinearSales(0, 10),
-        new LinearSales(1, 250),
-        new LinearSales(2, 200),
-        new LinearSales(3, 150),
-      ],
-      'myFakeMobileData': [
-        new LinearSales(0, 15),
-        new LinearSales(1, 75),
-        new LinearSales(2, 100),
-        new LinearSales(3, 225),
-      ],
-      'myFakeMobileDataSecond': [
-        new LinearSales(0, 15),
-        new LinearSales(1, 75),
-        new LinearSales(2, 100),
-        new LinearSales(3, 225),
-      ]
-    };
+    curveChartData = MockDataGenerator.mockLineChartData();
 
     isCurvedLines = false;
     isVertical = true;
@@ -94,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeTabletData'],
         fillPatternFn: (LinearSales sales, _) =>
-        charts.FillPatternType.forwardHatch,
+            charts.FillPatternType.forwardHatch,
       ),
       new charts.Series<LinearSales, String>(
         id: 'Mobile',
@@ -111,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
         colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
         // areaColorFn specifies that the area skirt will be light blue.
         areaColorFn: (_, __) =>
-        charts.MaterialPalette.blue.shadeDefault.lighter,
+            charts.MaterialPalette.blue.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeDesktopData'],
@@ -132,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
         colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
         // areaColorFn specifies that the area skirt will be light green.
         areaColorFn: (_, __) =>
-        charts.MaterialPalette.green.shadeDefault.lighter,
+            charts.MaterialPalette.green.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeMobileData'],
@@ -143,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
         colorFn: (_, __) => charts.MaterialPalette.deepOrange.shadeDefault,
         // areaColorFn specifies that the area skirt will be light green.
         areaColorFn: (_, __) =>
-        charts.MaterialPalette.deepOrange.shadeDefault.lighter,
+            charts.MaterialPalette.deepOrange.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales * 1.1,
         data: curveChartData['myFakeMobileDataSecond'],
@@ -169,26 +141,94 @@ class _MyHomePageState extends State<MyHomePage> {
       barGroupingType: charts.BarGroupingType.grouped,
     );
 
-    var groupedHorizontalBarChart = new charts.BarChart(
-        groupedBarChartSeries,
+    var groupedHorizontalBarChart = new charts.BarChart(groupedBarChartSeries,
         animate: animateChart,
         vertical: false,
-        barGroupingType: charts.BarGroupingType.grouped
-    );
+        barGroupingType: charts.BarGroupingType.grouped);
 
     charts.LineChart lineChart() {
-      return new charts.LineChart(
-          lineChartSeries,
+      return new charts.LineChart(lineChartSeries,
           defaultRenderer: new charts.LineRendererConfig(
-              includeArea: isCurvedChartFilled,
-              stacked: isStacked),
+              includeArea: isCurvedChartFilled, stacked: isStacked),
           animate: animateChart);
+    }
+
+    charts.PieChart pieChart() {
+      return charts.PieChart(
+        series,
+        animate: animateChart,
+        // Add the legend behavior to the chart to turn on legends.
+        // This example shows how to optionally show measure and provide a custom
+        // formatter.
+        behaviors: [
+          new charts.DatumLegend(
+            // Positions for "start" and "end" will be left and right respectively
+            // for widgets with a build context that has directionality ltr.
+            // For rtl, "start" and "end" will be right and left respectively.
+            // Since this example has directionality of ltr, the legend is
+            // positioned on the right side of the chart.
+            position: charts.BehaviorPosition.end,
+            // By default, if the position of the chart is on the left or right of
+            // the chart, [horizontalFirst] is set to false. This means that the
+            // legend entries will grow as new rows first instead of a new column.
+            horizontalFirst: false,
+            // This defines the padding around each legend entry.
+            cellPadding: new EdgeInsets.only(right: 4.0, bottom: 4.0),
+            // Set [showMeasures] to true to display measures in series legend.
+            showMeasures: true,
+            // Configure the measure value to be shown by default in the legend.
+            legendDefaultMeasure: charts.LegendDefaultMeasure.firstValue,
+            // Optionally provide a measure formatter to format the measure value.
+            // If none is specified the value is formatted as a decimal.
+            measureFormatter: (num value) {
+              return value == null ? '-' : '${value}k';
+            },
+          ),
+        ],
+      );
+    }
+
+    ///return a Text widget with a text needed
+    Text getTextForGroupingButton() {
+
+      var str = '';
+
+      if(isPieChart) {
+        return Text('not used');
+      }
+
+      if (isCurvedLines) {
+        str = isStacked ? 'unstack' : 'stack';
+      }
+      else {
+        str = isStacked ? 'ungroup' : 'group';
+      }
+
+      return Text(str);
+    }
+
+    Text getFillStrokeTextForLineChart() {
+      if (!isCurvedLines) {
+        return Text('not used');
+      }
+
+
+      return Text(isCurvedChartFilled ? 'remove fill' : 'add fill');
+    }
+
+    Icon getBarChartOrientationIcon() {
+      if(isVertical) {
+        return Icon(Icons.reorder);
+      }
+      return Icon(Icons.equalizer);
     }
 
     ///---
 
     Widget getChart() {
-      print('get chart');
+      if (isPieChart) {
+        return pieChart();
+      }
 
       if (isCurvedLines) {
         return lineChart();
@@ -199,8 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
           return groupedVerticalBarChart;
         }
         return groupedHorizontalBarChart;
-      }
-      else {
+      } else {
         if (isVertical) {
           return verticalBarChart;
         }
@@ -208,9 +247,12 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
+    var screenHeight = MediaQuery.of(context).size.height;
+    var screenWidth = MediaQuery.of(context).size.width;
+
     var chartWidget = new Padding(
       padding: new EdgeInsets.fromLTRB(20, 10, 20, 30),
-      child: new SizedBox(height: 200.0, child: getChart()),
+      child: new SizedBox(height: screenHeight / 4.0, child: getChart()),
     );
 
     return new Scaffold(
@@ -219,41 +261,78 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: new Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             chartWidget,
-            Padding(
-                padding: EdgeInsets.fromLTRB(2, 0, 16, 2),
-                child: ButtonBar(
-                  buttonHeight: 44.0,
-                  children: <Widget>[
-                    RaisedButton.icon(
-                      icon: Icon(Icons.border_outer),
-                      onPressed: onLineChartFillSwitch,
-                      label: Text(''),
-                    ),
-                    RaisedButton.icon(
-                      icon: Icon(Icons.show_chart),
-                      onPressed: onCurveSwitch,
-                      label: Text(''),
-                    ),
-                    RaisedButton.icon(
-                      onPressed: onChangeStacked,
-                      color: Colors.green,
-                      textColor: Colors.white,
-                      icon: Icon(Icons.view_week),
-                      label: Text('stacks'),
-                    ),
-                    RaisedButton.icon(
-                      onPressed: onChangeOrientation,
-                      color: Colors.brown,
-                      textColor: Colors.white,
-                      icon: Icon(Icons.format_align_left),
-                      label: Text('orient'),
-                    )
-                  ],
-                )
-            ),
+            Container(
+              width: screenWidth * 0.9,
+              height: screenHeight * 0.4,
+              //color: Colors.yellow,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          IconButton(
+                            color: Colors.orange,
+                            highlightColor: Colors.blueAccent,
+                            splashColor: Colors.red,
+                            icon: Icon(Icons.pie_chart),
+                            onPressed: onTogglePiechart,
+                          ),
+                          IconButton(
+                            icon:Icon(Icons.show_chart),
+                            onPressed: onCurveSwitch,
+                            color: Colors.deepOrange,
+                          ),
+                          IconButton(
+                            icon:Icon(Icons.view_week),
+                            color:Colors.blueAccent,
+                            onPressed: onToggleBarChart,
+                          ),
+
+                        ],
+                      ),
+                      IconButton(
+                        color: Colors.orange,
+                        highlightColor: Colors.blueAccent,
+                        splashColor: Colors.red,
+                        icon: Icon(Icons.refresh),
+                        onPressed: randomizeData,
+                      ),
+                      RaisedButton.icon(
+                        icon: Icon(Icons.border_outer),
+                        onPressed: onLineChartFillSwitch,
+                        label: getFillStrokeTextForLineChart(),
+                      ),
+
+
+                    ],
+                  ),
+                  Column(
+                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    //crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      RaisedButton.icon(
+                        onPressed: onChangeStacked,
+                        color: Colors.green,
+                        textColor: Colors.white,
+                        icon: Icon(Icons.view_week),
+                        label: getTextForGroupingButton(),
+                      ),
+                      RaisedButton.icon(
+                        onPressed: onChangeOrientation,
+                        color: Colors.brown,
+                        textColor: Colors.white,
+                        icon: getBarChartOrientationIcon(),
+                        label: Text('orient'),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            )
           ],
         ),
       ),
@@ -288,21 +367,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (isCurvedLines) {
       //curved chart data change ... :
 
-      print('increment 1 column in line chart');
-
       var firstSale = curveChartData['myFakeDesktopData'][1]; //unsafe
-      print('$firstSale');
 
       var saleVolume = (firstSale?.sales ?? 20);
-      print('SaleVolume:  $saleVolume');
       setState(() {
         animateChart = false;
         firstSale?.addToSales(20);
       });
       return;
     }
-
-    print('BarChart update');
 
     //bar chart data change
 
@@ -317,41 +390,64 @@ class _MyHomePageState extends State<MyHomePage> {
   void handleAddDataButtonPress() {
     if (!isCurvedLines) {
       ///bar chart data change
-      print('BarChart add column');
       setState(() {
-        print(barChartData.toString());
         barChartData.putIfAbsent(
             '2012', () => ClicksPerYear('2012', 42, Colors.teal));
-        print(barChartData);
       });
       return;
     }
   }
 
   void onChangeOrientation() {
-    print('Change orientation');
     setState(() {
+      isPieChart = false;
+      isCurvedLines = false;
       isVertical = !isVertical;
     });
   }
 
   void onChangeStacked() {
-    print('Change stacked');
     setState(() {
+      animateChart = true;
       isStacked = !isStacked;
     });
   }
 
   void onCurveSwitch() {
-    print('Change Line/Bars');
     setState(() {
-      isCurvedLines = !isCurvedLines;
+      isPieChart = false;
+      isCurvedLines = true;
     });
   }
 
   void onLineChartFillSwitch() {
+    if (!isCurvedLines) {
+      return;
+    }
+
     setState(() {
       isCurvedChartFilled = !isCurvedChartFilled;
     });
+  }
+
+  void onTogglePiechart() {
+    setState(() {
+      isPieChart = !isPieChart;
+    });
+  }
+
+  void onToggleBarChart() {
+    setState(() {
+      isCurvedLines = false;
+      isPieChart = false;
+    });
+  }
+
+  void randomizeData() {
+    setState(() {
+      barChartData = MockDataGenerator.mockBarChartData();
+      curveChartData = MockDataGenerator.mockLineChartData();
+    });
+
   }
 }
