@@ -203,7 +203,6 @@ class _MyHomePageState extends State<MyHomePage> {
       else {
         str = isStacked ? 'ungroup' : 'group';
       }
-
       return Text(str);
     }
 
@@ -211,8 +210,6 @@ class _MyHomePageState extends State<MyHomePage> {
       if (!isCurvedLines) {
         return Text('not used');
       }
-
-
       return Text(isCurvedChartFilled ? 'remove fill' : 'add fill');
     }
 
