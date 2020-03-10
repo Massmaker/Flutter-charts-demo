@@ -188,7 +188,6 @@ class _MyHomePageState extends State<MyHomePage> {
     ///---
 
     Widget getChart() {
-      print('get chart');
 
       if (isCurvedLines) {
         return lineChart();
@@ -291,21 +290,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (isCurvedLines) {
       //curved chart data change ... :
 
-      print('increment 1 column in line chart');
-
       var firstSale = curveChartData['myFakeDesktopData'][1]; //unsafe
-      print('$firstSale');
 
       var saleVolume = (firstSale?.sales ?? 20);
-      print('SaleVolume:  $saleVolume');
       setState(() {
         animateChart = false;
         firstSale?.addToSales(20);
       });
       return;
     }
-
-    print('BarChart update');
 
     //bar chart data change
 
@@ -320,33 +313,28 @@ class _MyHomePageState extends State<MyHomePage> {
   void handleAddDataButtonPress() {
     if (!isCurvedLines) {
       ///bar chart data change
-      print('BarChart add column');
       setState(() {
-        print(barChartData.toString());
+
         barChartData.putIfAbsent(
             '2012', () => ClicksPerYear('2012', 42, Colors.teal));
-        print(barChartData);
       });
       return;
     }
   }
 
   void onChangeOrientation() {
-    print('Change orientation');
     setState(() {
       isVertical = !isVertical;
     });
   }
 
   void onChangeStacked() {
-    print('Change stacked');
     setState(() {
       isStacked = !isStacked;
     });
   }
 
   void onCurveSwitch() {
-    print('Change Line/Bars');
     setState(() {
       isCurvedLines = !isCurvedLines;
     });
