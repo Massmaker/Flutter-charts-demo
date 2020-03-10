@@ -1,6 +1,13 @@
 # Flutter-charts-demo
 a test Flutter single view application to see some possibilities of charts_flutter package
 
-<img src = "flutter_app/lib/assets/images/SC1.png" width="100" height = "200" />
-![Image some screenshots1](flutter_app/lib/assets/images/SC1.png)
-![Image some screenshots2](https://drive.google.com/file/d/1FA1L4cSn5BFs6Wo0NZ2yjKaILnvZwPLF/view?usp=sharing)
+<img src = "flutter_app/lib/assets/images/SC1.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC2.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC3.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC4.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC5.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC6.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC7.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC8.png" width="200" height = "300" />
+<img src = "flutter_app/lib/assets/images/SC9.png" width="200" height = "300" />
+
