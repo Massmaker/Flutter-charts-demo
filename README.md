@@ -1,7 +1,7 @@
 # Flutter-charts-demo
 a test Flutter single view application to see some possibilities of charts_flutter package
 
-<img src = "flutter_app/lib/assets/images/SC1.png" width="200" height = "350" float="right"/>
+<img src = "flutter_app/lib/assets/images/SC1.png" width="200" height = "350" float="left"/>
 <img src = "flutter_app/lib/assets/images/SC2.png" width="200" height = "350" />
 <img src = "flutter_app/lib/assets/images/SC3.png" width="200" height = "350" />
 <img src = "flutter_app/lib/assets/images/SC4.png" width="200" height = "350" />
