@@ -1,8 +1,8 @@
 import 'package:flutterapp/dataClasses/LinearSales.dart';
+import 'package:flutterapp/dataClasses/LinearSalesRadial.dart';
 import 'package:flutterapp/dataClasses/ClicksPerYear.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'dart:math';
 
 class MockDataGenerator {
@@ -61,4 +61,28 @@ class MockDataGenerator {
       };
   }
 
+
+  static List <LinearSalesRadial> mockBubbleChartData() {
+
+    var fakeLineChartData = mockLineChartData();
+
+    var data = fakeLineChartData.values.toList();// fakeLineChartData['myFakeDesktopData'] + fakeLineChartData['myFakeTabletData'] ;
+
+    var salesData = data.expand( (array) => array).toList(); //flatten the arrays inside array
+
+    var result = List<LinearSalesRadial>();
+
+    for(LinearSales sales in salesData) {
+      var radius = 5 + random.nextInt(20);
+      var randIncrement = 0 + random.nextInt(20);
+      var salesYear = result.length < 4 ? sales.year : sales.year + randIncrement;
+
+      var radialSale =  LinearSalesRadial(salesYear, sales.sales, radius);
+      result.add(radialSale);
+
+      //print('year: ${radialSale.year}');
+    }
+
+    return result;
+  }
 }

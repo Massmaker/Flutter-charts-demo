@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:flutterapp/dataClasses/LinearSalesRadial.dart';
 import 'package:intl/intl.dart';
 import 'dataClasses/ClicksPerYear.dart';
 import 'dataClasses/LinearSales.dart';
 import 'package:flutterapp/MockDataGenerator.dart';
+import 'ChartType.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -17,33 +19,36 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var currentTime = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
-  var isCurvedLines = false;
+  ChartType chartType = ChartType.barChart;
   var isCurvedChartFilled = true;
   var isVertical = true;
   var isStacked = false;
-  var isPieChart = false;
+
   var animateChart = true;
 
   Map<String, ClicksPerYear> barChartData;
   Map<String, List<LinearSales>> curveChartData;
+  List<LinearSales> scatterPlotChartData;
+  final maxMeasure = 300;
 
   @override
   void initState() {
     barChartData = MockDataGenerator.mockBarChartData();
-
     curveChartData = MockDataGenerator.mockLineChartData();
+    scatterPlotChartData = MockDataGenerator.mockBubbleChartData();
 
-    isCurvedLines = false;
     isVertical = true;
     isStacked = false;
     animateChart = true;
+
+    chartType = ChartType.barChart;
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    ///Bar Chart BottomUpwards
+    ///Chart Data
     var series = [
       new charts.Series(
           domainFn: (ClicksPerYear clickData, _) => clickData.year,
@@ -122,6 +127,31 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ];
 
+    var scatterPlotChartSeries = [
+      new charts.Series<LinearSalesRadial, int>(
+        id: 'Bubble Sales',
+        domainFn: (LinearSalesRadial sales, _) => sales.year,
+        measureFn: (LinearSalesRadial sales, _) => sales.sales,
+        data: scatterPlotChartData,
+        // Providing a color function is optional.
+        colorFn: (LinearSalesRadial sales, _) {
+          // Bucket the measure column value into 3 distinct colors.
+          final bucket = sales.sales / maxMeasure;
+
+          if (bucket < 1 / 3) {
+            return charts.MaterialPalette.blue.shadeDefault;
+          } else if (bucket < 2 / 3) {
+            return charts.MaterialPalette.red.shadeDefault;
+          } else {
+            return charts.MaterialPalette.green.shadeDefault;
+          }
+        },
+        // Providing a radius function is optional.
+        radiusPxFn: (LinearSalesRadial sales, _) => sales.radius,
+      )
+    ];
+
+    /// Charts
     var verticalBarChart = new charts.BarChart(
       series,
       animate: animateChart,
@@ -146,6 +176,13 @@ class _MyHomePageState extends State<MyHomePage> {
         vertical: false,
         barGroupingType: charts.BarGroupingType.grouped);
 
+    charts.ScatterPlotChart scatterPlotChart() {
+      return new charts.ScatterPlotChart(
+        scatterPlotChartSeries,
+        animate: animateChart,
+      );
+    }
+
     charts.LineChart lineChart() {
       return new charts.LineChart(lineChartSeries,
           defaultRenderer: new charts.LineRendererConfig(
@@ -153,68 +190,99 @@ class _MyHomePageState extends State<MyHomePage> {
           animate: animateChart);
     }
 
-    charts.PieChart pieChart() {
-      return charts.PieChart(
+    charts.PieChart pieChartConfigured({bool donut = false}) {
+
+      print("Donut: $donut");
+
+      var renderer = donut ? new charts.ArcRendererConfig(
+                                          arcWidth: 60,
+                                          arcRendererDecorators: [new charts.ArcLabelDecorator()])
+                           : null;
+
+      var behaviours = donut ? null
+                             : [
+        new charts.DatumLegend(
+          // Positions for "start" and "end" will be left and right respectively
+          // for widgets with a build context that has directionality ltr.
+          // For rtl, "start" and "end" will be right and left respectively.
+          // Since this example has directionality of ltr, the legend is
+          // positioned on the right side of the chart.
+          position: charts.BehaviorPosition.end,
+          // By default, if the position of the chart is on the left or right of
+          // the chart, [horizontalFirst] is set to false. This means that the
+          // legend entries will grow as new rows first instead of a new column.
+          horizontalFirst: false,
+          // This defines the padding around each legend entry.
+          cellPadding: new EdgeInsets.only(right: 4.0, bottom: 4.0),
+          // Set [showMeasures] to true to display measures in series legend.
+          showMeasures: true,
+          // Configure the measure value to be shown by default in the legend.
+          legendDefaultMeasure: charts.LegendDefaultMeasure.firstValue,
+          // Optionally provide a measure formatter to format the measure value.
+          // If none is specified the value is formatted as a decimal.
+          measureFormatter: (num value) {
+            return value == null ? '-' : '${value}k';
+          },
+        ),
+      ];
+
+      print('Renderer: ${renderer}');
+
+      return new charts.PieChart(
         series,
         animate: animateChart,
+        // Configure the width of the pie slices to 60px. The remaining space in
+        // the chart will be left as a hole in the center.
+        //
+        // [ArcLabelDecorator] will automatically position the label inside the
+        // arc if the label will fit. If the label will not fit, it will draw
+        // outside of the arc with a leader line. Labels can always display
+        // inside or outside using [LabelPosition].
+        //
+        // Text style for inside / outside can be controlled independently by
+        // setting [insideLabelStyleSpec] and [outsideLabelStyleSpec].
+        //
+        // Example configuring different styles for inside/outside:
+        //       new charts.ArcLabelDecorator(
+        //          insideLabelStyleSpec: new charts.TextStyleSpec(...),
+        //          outsideLabelStyleSpec: new charts.TextStyleSpec(...)),
+        defaultRenderer: renderer,
         // Add the legend behavior to the chart to turn on legends.
         // This example shows how to optionally show measure and provide a custom
         // formatter.
-        behaviors: [
-          new charts.DatumLegend(
-            // Positions for "start" and "end" will be left and right respectively
-            // for widgets with a build context that has directionality ltr.
-            // For rtl, "start" and "end" will be right and left respectively.
-            // Since this example has directionality of ltr, the legend is
-            // positioned on the right side of the chart.
-            position: charts.BehaviorPosition.end,
-            // By default, if the position of the chart is on the left or right of
-            // the chart, [horizontalFirst] is set to false. This means that the
-            // legend entries will grow as new rows first instead of a new column.
-            horizontalFirst: false,
-            // This defines the padding around each legend entry.
-            cellPadding: new EdgeInsets.only(right: 4.0, bottom: 4.0),
-            // Set [showMeasures] to true to display measures in series legend.
-            showMeasures: true,
-            // Configure the measure value to be shown by default in the legend.
-            legendDefaultMeasure: charts.LegendDefaultMeasure.firstValue,
-            // Optionally provide a measure formatter to format the measure value.
-            // If none is specified the value is formatted as a decimal.
-            measureFormatter: (num value) {
-              return value == null ? '-' : '${value}k';
-            },
-          ),
-        ],
+        behaviors: behaviours ,
       );
+    }
+
+    charts.PieChart pieChart() {
+        return pieChartConfigured();
+    }
+    charts.PieChart donutChart() {
+      return pieChartConfigured(donut: true);
     }
 
     ///return a Text widget with a text needed
     Text getTextForGroupingButton() {
+      var str = 'not used';
 
-      var str = '';
-
-      if(isPieChart) {
-        return Text('not used');
-      }
-
-      if (isCurvedLines) {
+      if (chartType == ChartType.lineChart) {
         str = isStacked ? 'unstack' : 'stack';
-      }
-      else {
+      } else if (chartType == ChartType.barChart) {
         str = isStacked ? 'ungroup' : 'group';
       }
       return Text(str);
     }
 
     Text getFillStrokeTextForLineChart() {
-      if (!isCurvedLines) {
-        return Text('not used');
+      if (chartType == ChartType.lineChart) {
+        return Text(isCurvedChartFilled ? 'remove fill' : 'add fill');
       }
-      return Text(isCurvedChartFilled ? 'remove fill' : 'add fill');
+
+      return Text('not used');
     }
 
     Icon getBarChartOrientationIcon() {
-      if(isVertical) {
+      if (isVertical) {
         return Icon(Icons.reorder);
       }
       return Icon(Icons.equalizer);
@@ -223,24 +291,35 @@ class _MyHomePageState extends State<MyHomePage> {
     ///---
 
     Widget getChart() {
-      if (isPieChart) {
-        return pieChart();
-      }
 
-      if (isCurvedLines) {
-        return lineChart();
-      }
+      animateChart = true;
 
-      if (isStacked) {
-        if (isVertical) {
-          return groupedVerticalBarChart;
-        }
-        return groupedHorizontalBarChart;
-      } else {
-        if (isVertical) {
-          return verticalBarChart;
-        }
-        return horizontalBarChart;
+      switch (chartType) {
+        case ChartType.bubbleChart:
+          return scatterPlotChart();
+
+        case ChartType.pieChart:
+          return pieChart();
+
+        case ChartType.lineChart:
+          return lineChart();
+
+        case ChartType.barChart:
+          if (isStacked) {
+            if (isVertical) {
+              return groupedVerticalBarChart;
+            }
+            return groupedHorizontalBarChart;
+          } else if (isVertical) {
+            return verticalBarChart;
+          }
+          return horizontalBarChart;
+
+        case ChartType.donutChart:
+          animateChart = false;
+          return donutChart();
+
+        default: return verticalBarChart;
       }
     }
 
@@ -249,7 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     var chartWidget = new Padding(
       padding: new EdgeInsets.fromLTRB(20, 10, 20, 30),
-      child: new SizedBox(height: screenHeight / 4.0, child: getChart()),
+      child: new SizedBox(height: screenHeight / 3.0, child: getChart()),
     );
 
     return new Scaffold(
@@ -259,52 +338,29 @@ class _MyHomePageState extends State<MyHomePage> {
       body: new Center(
         child: Column(
           children: <Widget>[
+            IconButton(
+              color: Colors.orange,
+//              highlightColor: Colors.blueAccent,
+//              splashColor: Colors.red,
+              icon: Icon(Icons.refresh),
+              iconSize: 44,
+              onPressed: randomizeData,
+            ),
             chartWidget,
             Container(
               width: screenWidth * 0.9,
-              height: screenHeight * 0.4,
+              height: screenHeight * 0.2,
               //color: Colors.yellow,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
                   Column(
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          IconButton(
-                            color: Colors.orange,
-                            highlightColor: Colors.blueAccent,
-                            splashColor: Colors.red,
-                            icon: Icon(Icons.pie_chart),
-                            onPressed: onTogglePiechart,
-                          ),
-                          IconButton(
-                            icon:Icon(Icons.show_chart),
-                            onPressed: onCurveSwitch,
-                            color: Colors.deepOrange,
-                          ),
-                          IconButton(
-                            icon:Icon(Icons.view_week),
-                            color:Colors.blueAccent,
-                            onPressed: onToggleBarChart,
-                          ),
-
-                        ],
-                      ),
-                      IconButton(
-                        color: Colors.orange,
-                        highlightColor: Colors.blueAccent,
-                        splashColor: Colors.red,
-                        icon: Icon(Icons.refresh),
-                        onPressed: randomizeData,
-                      ),
                       RaisedButton.icon(
                         icon: Icon(Icons.border_outer),
-                        onPressed: onLineChartFillSwitch,
                         label: getFillStrokeTextForLineChart(),
+                        onPressed: onLineChartFillSwitch,
                       ),
-
-
                     ],
                   ),
                   Column(
@@ -333,40 +389,86 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(
-              child: Icon(
-                Icons.add,
-              ),
+            child: FloatingActionButton.extended(
+              icon:Icon(Icons.add),
+              label: Text('addData'),
               backgroundColor: Colors.red,
               onPressed: handleAddDataButtonPress,
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(
+            child: FloatingActionButton.extended(
+              icon: Icon(Icons.add),
+              label: Text('increment line'),
               onPressed: handleIncrementButtonPress,
-              child: Icon(
-                Icons.add,
-              ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 4.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.donut_large),
+              color: Colors.orange,
+              highlightColor: Colors.blueAccent,
+              splashColor: Colors.red,
+              iconSize: 44,
+              tooltip: 'Pie Chart',
+              onPressed: onToggleDonutChart,
+            ),
+            IconButton(
+              icon: Icon(Icons.pie_chart),
+              color: Colors.orange,
+              highlightColor: Colors.blueAccent,
+              splashColor: Colors.red,
+              iconSize: 44,
+              tooltip: 'Pie Chart',
+              onPressed: onTogglePieChart,
+            ),
+
+            IconButton(
+              icon: Icon(Icons.show_chart),
+              color: Colors.deepOrange,
+              iconSize: 44,
+              tooltip: 'Curve Chart',
+              onPressed: onToggleCurveChart,
+            ),
+            IconButton(
+              icon: Icon(Icons.view_week),
+              color: Colors.blueAccent,
+              iconSize: 44,
+              tooltip: 'Bar Chart',
+              onPressed: onToggleBarChart,
+            ),
+            IconButton(
+              icon: Icon(Icons.bubble_chart),
+              color: Colors.lightGreen,
+              iconSize: 44,
+              tooltip: 'Bubble chart',
+              onPressed: onToggleBubbleChart,
+            )
+          ],
+        ),
       ),
     );
   }
 
   void handleIncrementButtonPress() {
-    if (isCurvedLines) {
-      //curved chart data change ... :
-
+    if (chartType == ChartType.lineChart) {
+      //line chart data change ... :
       var firstSale = curveChartData['myFakeDesktopData'][1]; //unsafe
 
-      var saleVolume = (firstSale?.sales ?? 20);
       setState(() {
         animateChart = false;
         firstSale?.addToSales(20);
@@ -374,8 +476,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    //bar chart data change
-
+    //bar chart and pie chart data change
     setState(() {
       animateChart = true;
       DateTime now = DateTime.now();
@@ -385,22 +486,27 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleAddDataButtonPress() {
-    if (!isCurvedLines) {
+    if (chartType != ChartType.lineChart) {
       ///bar chart data change
       setState(() {
+        if (barChartData['2021'] != null) {
+          barChartData.putIfAbsent(
+              '2022', () => ClicksPerYear('2022', 35, Colors.brown));
+        }
+
         barChartData.putIfAbsent(
-            '2012', () => ClicksPerYear('2012', 42, Colors.teal));
+            '2021', () => ClicksPerYear('2021', 42, Colors.teal));
       });
       return;
     }
   }
 
   void onChangeOrientation() {
-    setState(() {
-      isPieChart = false;
-      isCurvedLines = false;
-      isVertical = !isVertical;
-    });
+    if (chartType == ChartType.barChart) {
+      setState(() {
+        isVertical = !isVertical;
+      });
+    }
   }
 
   void onChangeStacked() {
@@ -410,15 +516,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onCurveSwitch() {
-    setState(() {
-      isPieChart = false;
-      isCurvedLines = true;
-    });
-  }
-
   void onLineChartFillSwitch() {
-    if (!isCurvedLines) {
+    if (chartType != ChartType.lineChart) {
       return;
     }
 
@@ -427,16 +526,33 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onTogglePiechart() {
+  void onToggleCurveChart() {
     setState(() {
-      isPieChart = !isPieChart;
+      chartType = ChartType.lineChart;
     });
+  }
+
+  void onTogglePieChart() {
+    setState(() {
+      chartType = ChartType.pieChart;
+    });
+  }
+
+  void onToggleDonutChart() {
+      setState(() {
+        chartType = ChartType.donutChart;
+      });
   }
 
   void onToggleBarChart() {
     setState(() {
-      isCurvedLines = false;
-      isPieChart = false;
+      chartType = ChartType.barChart;
+    });
+  }
+
+  void onToggleBubbleChart() {
+    setState(() {
+      chartType = ChartType.bubbleChart;
     });
   }
 
@@ -444,7 +560,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       barChartData = MockDataGenerator.mockBarChartData();
       curveChartData = MockDataGenerator.mockLineChartData();
+      scatterPlotChartData = MockDataGenerator.mockBubbleChartData();
     });
-
   }
 }
