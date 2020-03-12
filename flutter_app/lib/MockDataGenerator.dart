@@ -26,7 +26,7 @@ class MockDataGenerator {
       '2015': ClicksPerYear('2015', value2015, Colors.red),
       '2016': ClicksPerYear('2016', value2016, Colors.orange),
       '2017': ClicksPerYear('2017', value2017, Colors.yellow),
-      '$currentTime': ClicksPerYear('$currentTime', 0, Colors.green),
+      '$currentTime': ClicksPerYear('$currentTime', 2, Colors.green),
     };
   }
 
