@@ -1,7 +1,6 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutterapp/dataClasses/LinearSalesRadial.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +8,8 @@ import 'dataClasses/ClicksPerYear.dart';
 import 'dataClasses/LinearSales.dart';
 import 'package:flutterapp/MockDataGenerator.dart';
 import 'ChartType.dart';
-import 'dart:core';
+import 'package:charts_flutter/src/text_element.dart' as textElement;
+import 'package:charts_flutter/src/text_style.dart' as style;
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -29,6 +29,8 @@ class _MyHomePageState extends State<MyHomePage> {
   var isStacked = false;
 
   var animateChart = true;
+
+  var lineChartText = '';
 
   Map<String, ClicksPerYear> barChartData;
   Map<String, List<LinearSales>> curveChartData;
@@ -52,7 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     ///Detect Device`s orientation
     final mediaQueryData = MediaQuery.of(context);
     var orientation = mediaQueryData.orientation;
@@ -63,10 +64,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     var chartHeight = isHorizontal ? screenHeight * 0.75 : screenHeight / 3.0;
 
-
     ///Chart Data
     var series = [
-      new charts.Series(
+      new Series(
           domainFn: (ClicksPerYear clickData, _) => clickData.year,
           measureFn: (ClicksPerYear clickData, _) => clickData.clicks,
           colorFn: (ClicksPerYear clickData, _) => clickData.color,
@@ -75,21 +75,20 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     var groupedBarChartSeries = [
-      new charts.Series<LinearSales, String>(
+      new Series<LinearSales, String>(
         id: 'Desktop',
         domainFn: (LinearSales sales, _) => sales.year.toString(),
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeDesktopData'],
       ),
-      new charts.Series<LinearSales, String>(
+      new Series<LinearSales, String>(
         id: 'Tablet',
         domainFn: (LinearSales sales, _) => sales.year.toString(),
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeTabletData'],
-        fillPatternFn: (LinearSales sales, _) =>
-            charts.FillPatternType.forwardHatch,
+        fillPatternFn: (LinearSales sales, _) => FillPatternType.forwardHatch,
       ),
-      new charts.Series<LinearSales, String>(
+      new Series<LinearSales, String>(
         id: 'Mobile',
         domainFn: (LinearSales sales, _) => sales.year.toString(),
         measureFn: (LinearSales sales, _) => sales.sales,
@@ -98,45 +97,42 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     var lineChartSeries = [
-      new charts.Series<LinearSales, int>(
+      new Series<LinearSales, int>(
         id: 'Desktop',
         // colorFn specifies that the line will be blue.
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
         // areaColorFn specifies that the area skirt will be light blue.
-        areaColorFn: (_, __) =>
-            charts.MaterialPalette.blue.shadeDefault.lighter,
+        areaColorFn: (_, __) => MaterialPalette.blue.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeDesktopData'],
       ),
-      new charts.Series<LinearSales, int>(
+      new Series<LinearSales, int>(
         id: 'Tablet',
         // colorFn specifies that the line will be red.
-        colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
+        colorFn: (_, __) => MaterialPalette.red.shadeDefault,
         // areaColorFn specifies that the area skirt will be light red.
-        areaColorFn: (_, __) => charts.MaterialPalette.red.shadeDefault.lighter,
+        areaColorFn: (_, __) => MaterialPalette.red.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeTabletData'],
       ),
-      new charts.Series<LinearSales, int>(
+      new Series<LinearSales, int>(
         id: 'Mobile',
         // colorFn specifies that the line will be green.
-        colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
+        colorFn: (_, __) => MaterialPalette.green.shadeDefault,
         // areaColorFn specifies that the area skirt will be light green.
-        areaColorFn: (_, __) =>
-            charts.MaterialPalette.green.shadeDefault.lighter,
+        areaColorFn: (_, __) => MaterialPalette.green.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales,
         data: curveChartData['myFakeMobileData'],
       ),
-      new charts.Series<LinearSales, int>(
+      new Series<LinearSales, int>(
         id: 'Mobile2',
         // colorFn specifies that the line will be green.
-        colorFn: (_, __) => charts.MaterialPalette.deepOrange.shadeDefault,
+        colorFn: (_, __) => MaterialPalette.deepOrange.shadeDefault,
         // areaColorFn specifies that the area skirt will be light green.
-        areaColorFn: (_, __) =>
-            charts.MaterialPalette.deepOrange.shadeDefault.lighter,
+        areaColorFn: (_, __) => MaterialPalette.deepOrange.shadeDefault.lighter,
         domainFn: (LinearSales sales, _) => sales.year,
         measureFn: (LinearSales sales, _) => sales.sales * 1.1,
         data: curveChartData['myFakeMobileDataSecond'],
@@ -144,8 +140,8 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     var scatterPlotChartSeries = [
-      new charts.Series<LinearSalesRadial, int>(
-        id: 'Bubble Sales',
+      new Series<LinearSalesRadial, int>(
+        id: 'Sales',
         domainFn: (LinearSalesRadial sales, _) => sales.year,
         measureFn: (LinearSalesRadial sales, _) => sales.sales,
         data: scatterPlotChartData,
@@ -155,11 +151,11 @@ class _MyHomePageState extends State<MyHomePage> {
           final bucket = sales.sales / maxMeasure;
 
           if (bucket < 1 / 3) {
-            return charts.MaterialPalette.blue.shadeDefault;
+            return MaterialPalette.blue.shadeDefault;
           } else if (bucket < 2 / 3) {
-            return charts.MaterialPalette.red.shadeDefault;
+            return MaterialPalette.red.shadeDefault;
           } else {
-            return charts.MaterialPalette.green.shadeDefault;
+            return MaterialPalette.green.shadeDefault;
           }
         },
         // Providing a radius function is optional.
@@ -168,83 +164,107 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     /// Charts
-    var verticalBarChart = new charts.BarChart(
+    var verticalBarChart = new BarChart(
       series,
       animate: animateChart,
       vertical: true,
     );
 
-    var horizontalBarChart = new charts.BarChart(
+    var horizontalBarChart = new BarChart(
       series,
       animate: animateChart,
       vertical: false,
     );
 
-    var groupedVerticalBarChart = new charts.BarChart(
+    var groupedVerticalBarChart = new BarChart(
       groupedBarChartSeries,
       animate: animateChart,
       vertical: true,
-      barGroupingType: charts.BarGroupingType.grouped,
+      barGroupingType: BarGroupingType.grouped,
+      behaviors: [
+        SeriesLegend(),
+      ],
     );
 
-    var groupedHorizontalBarChart = new charts.BarChart(groupedBarChartSeries,
+    var groupedHorizontalBarChart = new BarChart(groupedBarChartSeries,
         animate: animateChart,
         vertical: false,
-        barGroupingType: charts.BarGroupingType.grouped);
+        barGroupingType: BarGroupingType.grouped);
 
-    charts.ScatterPlotChart scatterPlotChart() {
-      return new charts.ScatterPlotChart(
+    ScatterPlotChart scatterPlotChart() {
+      return new ScatterPlotChart(
         scatterPlotChartSeries,
         animate: animateChart,
       );
     }
 
-    charts.LineChart lineChart() {
-      return new charts.LineChart(lineChartSeries,
-          defaultRenderer: new charts.LineRendererConfig(
+    LineChart lineChart() {
+      return new LineChart(lineChartSeries,
+          behaviors: [
+            LinePointHighlighter(
+              symbolRenderer:
+                  CircleSymbolRenderer(), //CustomCircleSymbolRenderer(),
+            ),
+          ],
+          selectionModels: [
+            SelectionModelConfig(changedListener: (SelectionModel model) {
+              if (model.hasDatumSelection) {
+                var value = model.selectedSeries[0]
+                    .measureFn(model.selectedDatum[0].index);
+
+                print('$value');
+
+                lineChartText = '$value';
+              }
+            })
+          ],
+          defaultRenderer: LineRendererConfig(
               includeArea: isCurvedChartFilled, stacked: isStacked),
           animate: animateChart);
     }
 
-    charts.PieChart pieChartConfigured({bool donut = false}) {
-
+    PieChart pieChartConfigured({bool donut = false}) {
       //print("Donut: $donut");
 
-      var renderer = donut ? new charts.ArcRendererConfig(
-                                          arcWidth: isHorizontal ? (chartHeight / 5.5).floor() : 60, ///this value wants to be of Int
-                                          arcRendererDecorators: [new charts.ArcLabelDecorator()])
-                           : null;
+      var renderer = donut
+          ? new ArcRendererConfig(
+              arcWidth: isHorizontal ? (chartHeight / 5.5).floor() : 60,
 
-      var behaviours = donut ? null
-                             : [
-        new charts.DatumLegend(
-          // Positions for "start" and "end" will be left and right respectively
-          // for widgets with a build context that has directionality ltr.
-          // For rtl, "start" and "end" will be right and left respectively.
-          // Since this example has directionality of ltr, the legend is
-          // positioned on the right side of the chart.
-          position: charts.BehaviorPosition.end,
-          // By default, if the position of the chart is on the left or right of
-          // the chart, [horizontalFirst] is set to false. This means that the
-          // legend entries will grow as new rows first instead of a new column.
-          horizontalFirst: false,
-          // This defines the padding around each legend entry.
-          cellPadding: new EdgeInsets.only(right: 4.0, bottom: 4.0),
-          // Set [showMeasures] to true to display measures in series legend.
-          showMeasures: true,
-          // Configure the measure value to be shown by default in the legend.
-          legendDefaultMeasure: charts.LegendDefaultMeasure.firstValue,
-          // Optionally provide a measure formatter to format the measure value.
-          // If none is specified the value is formatted as a decimal.
-          measureFormatter: (num value) {
-            return value == null ? '-' : '${value}k';
-          },
-        ),
-      ];
+              ///this value wants to be of Int
+              arcRendererDecorators: [ArcLabelDecorator()])
+          : null;
+
+      var behaviours = donut
+          ? null
+          : [
+              new DatumLegend(
+                // Positions for "start" and "end" will be left and right respectively
+                // for widgets with a build context that has directionality ltr.
+                // For rtl, "start" and "end" will be right and left respectively.
+                // Since this example has directionality of ltr, the legend is
+                // positioned on the right side of the chart.
+                position: BehaviorPosition.end,
+                // By default, if the position of the chart is on the left or right of
+                // the chart, [horizontalFirst] is set to false. This means that the
+                // legend entries will grow as new rows first instead of a new column.
+                horizontalFirst: false,
+                // This defines the padding around each legend entry.
+                cellPadding: new EdgeInsets.only(right: 4.0, bottom: 4.0),
+                // Set [showMeasures] to true to display measures in series legend.
+                showMeasures: true,
+                // Configure the measure value to be shown by default in the legend.
+                legendDefaultMeasure: LegendDefaultMeasure.firstValue,
+                // Optionally provide a measure formatter to format the measure value.
+                // If none is specified the value is formatted as a decimal.
+                measureFormatter: (num value) {
+                  return value == null ? '-' : '${value}k';
+                },
+              ),
+            ];
 
       //print('Renderer: ${renderer}');
 
-      return new charts.PieChart(
+      return new PieChart(
         series,
         animate: animateChart,
         // Configure the width of the pie slices to 60px. The remaining space in
@@ -266,14 +286,15 @@ class _MyHomePageState extends State<MyHomePage> {
         // Add the legend behavior to the chart to turn on legends.
         // This example shows how to optionally show measure and provide a custom
         // formatter.
-        behaviors: behaviours ,
+        behaviors: behaviours,
       );
     }
 
-    charts.PieChart pieChart() {
-        return pieChartConfigured();
+    PieChart pieChart() {
+      return pieChartConfigured();
     }
-    charts.PieChart donutChart() {
+
+    PieChart donutChart() {
       return pieChartConfigured(donut: true);
     }
 
@@ -307,7 +328,6 @@ class _MyHomePageState extends State<MyHomePage> {
     ///---
 
     Widget getChart() {
-
       switch (chartType) {
         case ChartType.bubbleChart:
           return scatterPlotChart();
@@ -333,22 +353,20 @@ class _MyHomePageState extends State<MyHomePage> {
           animateChart = false;
           return donutChart();
 
-        default: return verticalBarChart;
+        default:
+          return verticalBarChart;
       }
     }
 
     var chartWidget = new Padding(
       padding: new EdgeInsets.fromLTRB(20, 10, 20, 30),
-      child: new SizedBox(height: chartHeight,
-                          child: getChart()),
+      child: new SizedBox(height: chartHeight, child: getChart()),
     );
 
-
     Scaffold horizontalLayout() {
-
       return new Scaffold(
         appBar: AppBar(
-          title:Text(widget.title),
+          title: Text(widget.title),
         ),
         body: Center(
           child: Row(
@@ -361,44 +379,44 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                key:Key('Buttons column'),
+                key: Key('Buttons column'),
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                       Padding(
+                      Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
                         //child:Container(
-                          child:Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              RaisedButton.icon(
-                                icon: Icon(Icons.border_outer),
-                                label: getFillStrokeTextForLineChart(),
-                                onPressed: onLineChartFillSwitch,
-                              ),
-                              RaisedButton.icon(
-                                onPressed: onChangeStacked,
-                                color: Colors.green,
-                                textColor: Colors.white,
-                                icon: Icon(Icons.view_week),
-                                label: getTextForGroupingButton(),
-                              ),
-                              RaisedButton.icon(
-                                onPressed: onChangeOrientation,
-                                color: Colors.brown,
-                                textColor: Colors.white,
-                                icon: getBarChartOrientationIcon(),
-                                label: Text('orient'),
-                              ),
-                            ],
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            RaisedButton.icon(
+                              icon: Icon(Icons.border_outer),
+                              label: getFillStrokeTextForLineChart(),
+                              onPressed: onLineChartFillSwitch,
+                            ),
+                            RaisedButton.icon(
+                              onPressed: onChangeStacked,
+                              color: Colors.green,
+                              textColor: Colors.white,
+                              icon: Icon(Icons.view_week),
+                              label: getTextForGroupingButton(),
+                            ),
+                            RaisedButton.icon(
+                              onPressed: onChangeOrientation,
+                              color: Colors.brown,
+                              textColor: Colors.white,
+                              icon: getBarChartOrientationIcon(),
+                              label: Text('orient'),
+                            ),
+                          ],
                         ),
+                      ),
                       //),
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
                         child: Container(
                           //width:screenWidth * 0.15,
-                          child:  Column(
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -427,14 +445,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       ),
-
                     ],
                   ),
                 ],
               )
             ],
           ),
-
         ),
         bottomNavigationBar: BottomAppBar(
           shape: CircularNotchedRectangle(),
@@ -460,7 +476,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 tooltip: 'Pie Chart',
                 onPressed: onTogglePieChart,
               ),
-
               IconButton(
                 icon: Icon(Icons.show_chart),
                 color: Colors.deepOrange,
@@ -485,7 +500,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
-
       );
     }
 
@@ -548,14 +562,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
-
         floatingActionButton: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
-                icon:Icon(Icons.add),
+                icon: Icon(Icons.add),
                 label: Text('addData'),
                 backgroundColor: Colors.red,
                 onPressed: handleAddDataButtonPress,
@@ -595,7 +608,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 tooltip: 'Pie Chart',
                 onPressed: onTogglePieChart,
               ),
-
               IconButton(
                 icon: Icon(Icons.show_chart),
                 color: Colors.deepOrange,
@@ -702,9 +714,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onToggleDonutChart() {
-      setState(() {
-        chartType = ChartType.donutChart;
-      });
+    setState(() {
+      chartType = ChartType.donutChart;
+    });
   }
 
   void onToggleBarChart() {
@@ -728,3 +740,49 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 }
+
+//class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
+//
+//  String _text;
+//
+//  CustomCircleSymbolRenderer({String text}) {
+//    this._text = text;
+//  }
+//
+//  @override
+//  void paint(
+//      ChartCanvas canvas,
+//      Rectangle<num> bounds,
+//      {List<int> dashPattern,
+//        Color fillColor,
+//        FillPatternType fillPattern,
+//        Color strokeColor, double strokeWidthPx}) {
+//
+//    super.paint(canvas,
+//        bounds,
+//        dashPattern: dashPattern,
+//        fillColor: fillColor,
+//        fillPattern: fillPattern,
+//        strokeColor: strokeColor,
+//        strokeWidthPx: strokeWidthPx);
+//
+//    canvas.drawRect(
+//        Rectangle(
+//            bounds.left - 5,
+//            bounds.top - 30,
+//            bounds.width + 20,
+//            bounds.height + 20),
+//        fill: Color.white
+//    );
+//
+//    var textStyle = style.TextStyle();
+//    textStyle.color = Color.black;
+//    textStyle.fontSize = 15;
+//
+//    canvas.drawText(
+//        textElement.TextElement(_text, style: textStyle),
+//        (bounds.left).round(),
+//        (bounds.top - 28).round(),
+//    );
+//  }
+//}
