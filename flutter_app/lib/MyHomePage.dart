@@ -1,11 +1,15 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:flutter/rendering.dart';
 import 'package:flutterapp/dataClasses/LinearSalesRadial.dart';
 import 'package:intl/intl.dart';
 import 'dataClasses/ClicksPerYear.dart';
 import 'dataClasses/LinearSales.dart';
 import 'package:flutterapp/MockDataGenerator.dart';
 import 'ChartType.dart';
+import 'dart:core';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -48,6 +52,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    ///Detect Device`s orientation
+    final mediaQueryData = MediaQuery.of(context);
+    var orientation = mediaQueryData.orientation;
+    var isHorizontal = (orientation == Orientation.landscape);
+    var screenHeight = mediaQueryData.size.height;
+    var screenWidth = mediaQueryData.size.width;
+    //print('Is Horizontal: $isHorizontal');
+
+    var chartHeight = isHorizontal ? screenHeight * 0.75 : screenHeight / 3.0;
+
+
     ///Chart Data
     var series = [
       new charts.Series(
@@ -192,10 +208,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     charts.PieChart pieChartConfigured({bool donut = false}) {
 
-      print("Donut: $donut");
+      //print("Donut: $donut");
 
       var renderer = donut ? new charts.ArcRendererConfig(
-                                          arcWidth: 60,
+                                          arcWidth: isHorizontal ? (chartHeight / 5.5).floor() : 60, ///this value wants to be of Int
                                           arcRendererDecorators: [new charts.ArcLabelDecorator()])
                            : null;
 
@@ -226,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ];
 
-      print('Renderer: ${renderer}');
+      //print('Renderer: ${renderer}');
 
       return new charts.PieChart(
         series,
@@ -292,8 +308,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Widget getChart() {
 
-      animateChart = true;
-
       switch (chartType) {
         case ChartType.bubbleChart:
           return scatterPlotChart();
@@ -323,145 +337,293 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    var screenHeight = MediaQuery.of(context).size.height;
-    var screenWidth = MediaQuery.of(context).size.width;
-
     var chartWidget = new Padding(
       padding: new EdgeInsets.fromLTRB(20, 10, 20, 30),
-      child: new SizedBox(height: screenHeight / 3.0, child: getChart()),
+      child: new SizedBox(height: chartHeight,
+                          child: getChart()),
     );
 
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
-      ),
-      body: new Center(
-        child: Column(
-          children: <Widget>[
-            IconButton(
-              color: Colors.orange,
-//              highlightColor: Colors.blueAccent,
-//              splashColor: Colors.red,
-              icon: Icon(Icons.refresh),
-              iconSize: 44,
-              onPressed: randomizeData,
-            ),
-            chartWidget,
-            Container(
-              width: screenWidth * 0.9,
-              height: screenHeight * 0.2,
-              //color: Colors.yellow,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+
+    Scaffold horizontalLayout() {
+
+      return new Scaffold(
+        appBar: AppBar(
+          title:Text(widget.title),
+        ),
+        body: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Container(
+                width: screenWidth * 0.6,
+                child: chartWidget,
+                //color:Colors.lightGreen, //debug
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                key:Key('Buttons column'),
                 children: <Widget>[
-                  Column(
+                  Row(
                     children: <Widget>[
-                      RaisedButton.icon(
-                        icon: Icon(Icons.border_outer),
-                        label: getFillStrokeTextForLineChart(),
-                        onPressed: onLineChartFillSwitch,
+                       Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+                        //child:Container(
+                          child:Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              RaisedButton.icon(
+                                icon: Icon(Icons.border_outer),
+                                label: getFillStrokeTextForLineChart(),
+                                onPressed: onLineChartFillSwitch,
+                              ),
+                              RaisedButton.icon(
+                                onPressed: onChangeStacked,
+                                color: Colors.green,
+                                textColor: Colors.white,
+                                icon: Icon(Icons.view_week),
+                                label: getTextForGroupingButton(),
+                              ),
+                              RaisedButton.icon(
+                                onPressed: onChangeOrientation,
+                                color: Colors.brown,
+                                textColor: Colors.white,
+                                icon: getBarChartOrientationIcon(),
+                                label: Text('orient'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      //),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                        child: Container(
+                          //width:screenWidth * 0.15,
+                          child:  Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              RaisedButton.icon(
+                                onPressed: randomizeData,
+                                color: Colors.orange,
+                                textColor: Colors.white,
+                                icon: Icon(Icons.refresh),
+                                label: Text('randomise'),
+                              ),
+                              RaisedButton.icon(
+                                onPressed: handleIncrementButtonPress,
+                                color: Colors.blueAccent,
+                                textColor: Colors.white,
+                                icon: Icon(Icons.add),
+                                label: Text('addValue'),
+                              ),
+                              RaisedButton.icon(
+                                onPressed: handleAddDataButtonPress,
+                                color: Colors.redAccent,
+                                textColor: Colors.white,
+                                icon: Icon(Icons.add),
+                                label: Text('addData'),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  Column(
-                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      RaisedButton.icon(
-                        onPressed: onChangeStacked,
-                        color: Colors.green,
-                        textColor: Colors.white,
-                        icon: Icon(Icons.view_week),
-                        label: getTextForGroupingButton(),
-                      ),
-                      RaisedButton.icon(
-                        onPressed: onChangeOrientation,
-                        color: Colors.brown,
-                        textColor: Colors.white,
-                        icon: getBarChartOrientationIcon(),
-                        label: Text('orient'),
-                      )
+
                     ],
                   ),
                 ],
-              ),
-            )
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton.extended(
-              icon:Icon(Icons.add),
-              label: Text('addData'),
-              backgroundColor: Colors.red,
-              onPressed: handleAddDataButtonPress,
-            ),
+              )
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton.extended(
-              icon: Icon(Icons.add),
-              label: Text('increment line'),
-              onPressed: handleIncrementButtonPress,
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 4.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.donut_large),
-              color: Colors.orange,
-              highlightColor: Colors.blueAccent,
-              splashColor: Colors.red,
-              iconSize: 44,
-              tooltip: 'Pie Chart',
-              onPressed: onToggleDonutChart,
-            ),
-            IconButton(
-              icon: Icon(Icons.pie_chart),
-              color: Colors.orange,
-              highlightColor: Colors.blueAccent,
-              splashColor: Colors.red,
-              iconSize: 44,
-              tooltip: 'Pie Chart',
-              onPressed: onTogglePieChart,
-            ),
 
-            IconButton(
-              icon: Icon(Icons.show_chart),
-              color: Colors.deepOrange,
-              iconSize: 44,
-              tooltip: 'Curve Chart',
-              onPressed: onToggleCurveChart,
+        ),
+        bottomNavigationBar: BottomAppBar(
+          shape: CircularNotchedRectangle(),
+          notchMargin: 4.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.donut_large),
+                color: Colors.orange,
+                highlightColor: Colors.blueAccent,
+                splashColor: Colors.red,
+                iconSize: 44,
+                tooltip: 'Pie Chart',
+                onPressed: onToggleDonutChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.pie_chart),
+                color: Colors.orange,
+                highlightColor: Colors.blueAccent,
+                splashColor: Colors.red,
+                iconSize: 44,
+                tooltip: 'Pie Chart',
+                onPressed: onTogglePieChart,
+              ),
+
+              IconButton(
+                icon: Icon(Icons.show_chart),
+                color: Colors.deepOrange,
+                iconSize: 44,
+                tooltip: 'Curve Chart',
+                onPressed: onToggleCurveChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.view_week),
+                color: Colors.blueAccent,
+                iconSize: 44,
+                tooltip: 'Bar Chart',
+                onPressed: onToggleBarChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.bubble_chart),
+                color: Colors.lightGreen,
+                iconSize: 44,
+                tooltip: 'Bubble chart',
+                onPressed: onToggleBubbleChart,
+              )
+            ],
+          ),
+        ),
+
+      );
+    }
+
+    Scaffold verticalLayout() {
+      return new Scaffold(
+        appBar: new AppBar(
+          title: new Text(widget.title),
+        ),
+        body: new Center(
+          child: Column(
+            children: <Widget>[
+              IconButton(
+                color: Colors.orange,
+//              highlightColor: Colors.blueAccent,
+//              splashColor: Colors.red,
+                icon: Icon(Icons.refresh),
+                iconSize: 44,
+                onPressed: randomizeData,
+              ),
+              chartWidget,
+              Container(
+                width: screenWidth * 0.9,
+                height: screenHeight * 0.2,
+                //color: Colors.yellow,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        RaisedButton.icon(
+                          icon: Icon(Icons.border_outer),
+                          label: getFillStrokeTextForLineChart(),
+                          onPressed: onLineChartFillSwitch,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      //crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        RaisedButton.icon(
+                          onPressed: onChangeStacked,
+                          color: Colors.green,
+                          textColor: Colors.white,
+                          icon: Icon(Icons.view_week),
+                          label: getTextForGroupingButton(),
+                        ),
+                        RaisedButton.icon(
+                          onPressed: onChangeOrientation,
+                          color: Colors.brown,
+                          textColor: Colors.white,
+                          icon: getBarChartOrientationIcon(),
+                          label: Text('orient'),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FloatingActionButton.extended(
+                icon:Icon(Icons.add),
+                label: Text('addData'),
+                backgroundColor: Colors.red,
+                onPressed: handleAddDataButtonPress,
+              ),
             ),
-            IconButton(
-              icon: Icon(Icons.view_week),
-              color: Colors.blueAccent,
-              iconSize: 44,
-              tooltip: 'Bar Chart',
-              onPressed: onToggleBarChart,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FloatingActionButton.extended(
+                icon: Icon(Icons.add),
+                label: Text('increment line'),
+                onPressed: handleIncrementButtonPress,
+              ),
             ),
-            IconButton(
-              icon: Icon(Icons.bubble_chart),
-              color: Colors.lightGreen,
-              iconSize: 44,
-              tooltip: 'Bubble chart',
-              onPressed: onToggleBubbleChart,
-            )
           ],
         ),
-      ),
-    );
+        bottomNavigationBar: BottomAppBar(
+          shape: CircularNotchedRectangle(),
+          notchMargin: 4.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.donut_large),
+                color: Colors.orange,
+                highlightColor: Colors.blueAccent,
+                splashColor: Colors.red,
+                iconSize: 44,
+                tooltip: 'Pie Chart',
+                onPressed: onToggleDonutChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.pie_chart),
+                color: Colors.orange,
+                highlightColor: Colors.blueAccent,
+                splashColor: Colors.red,
+                iconSize: 44,
+                tooltip: 'Pie Chart',
+                onPressed: onTogglePieChart,
+              ),
+
+              IconButton(
+                icon: Icon(Icons.show_chart),
+                color: Colors.deepOrange,
+                iconSize: 44,
+                tooltip: 'Curve Chart',
+                onPressed: onToggleCurveChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.view_week),
+                color: Colors.blueAccent,
+                iconSize: 44,
+                tooltip: 'Bar Chart',
+                onPressed: onToggleBarChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.bubble_chart),
+                color: Colors.lightGreen,
+                iconSize: 44,
+                tooltip: 'Bubble chart',
+                onPressed: onToggleBubbleChart,
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
+    return isHorizontal ? horizontalLayout() : verticalLayout();
   }
 
   void handleIncrementButtonPress() {
@@ -522,6 +684,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     setState(() {
+      animateChart = false;
       isCurvedChartFilled = !isCurvedChartFilled;
     });
   }
@@ -552,6 +715,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onToggleBubbleChart() {
     setState(() {
+      animateChart = true;
       chartType = ChartType.bubbleChart;
     });
   }
