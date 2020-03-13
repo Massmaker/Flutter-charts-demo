@@ -11,6 +11,8 @@ import 'ChartType.dart';
 import 'package:charts_flutter/src/text_element.dart' as textElement;
 import 'package:charts_flutter/src/text_style.dart' as style;
 
+import 'CurvedLineChartSample.dart';
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
@@ -328,6 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ///---
 
     Widget getChart() {
+
       switch (chartType) {
         case ChartType.bubbleChart:
           return scatterPlotChart();
@@ -352,7 +355,8 @@ class _MyHomePageState extends State<MyHomePage> {
         case ChartType.donutChart:
           animateChart = false;
           return donutChart();
-
+        case ChartType.bezierCurveChart:
+          return CurvedLineChartSample();
         default:
           return verticalBarChart;
       }
@@ -496,6 +500,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 iconSize: 44,
                 tooltip: 'Bubble chart',
                 onPressed: onToggleBubbleChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.rounded_corner),
+                iconSize: 44,
+                color: Colors.pinkAccent,
+                tooltip: 'Smooth Curve chart',
+                onPressed: onToggleBezierCurveChart,
               )
             ],
           ),
@@ -628,6 +639,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 iconSize: 44,
                 tooltip: 'Bubble chart',
                 onPressed: onToggleBubbleChart,
+              ),
+              IconButton(
+                icon: Icon(Icons.multiline_chart),
+                iconSize: 44,
+                color: Colors.pinkAccent,
+                tooltip: 'Smooth Curve chart',
+                onPressed: onToggleBezierCurveChart,
               )
             ],
           ),
@@ -729,6 +747,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       animateChart = true;
       chartType = ChartType.bubbleChart;
+    });
+  }
+
+  void onToggleBezierCurveChart() {
+    setState(() {
+      animateChart = true;
+      chartType = ChartType.bezierCurveChart;
     });
   }
 

@@ -4,4 +4,5 @@ enum ChartType {
   pieChart,
   donutChart,
   bubbleChart,
+  bezierCurveChart,
 }
