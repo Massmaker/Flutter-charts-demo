@@ -12,6 +12,7 @@ import 'package:charts_flutter/src/text_element.dart' as textElement;
 import 'package:charts_flutter/src/text_style.dart' as style;
 
 import 'CurvedLineChartSample.dart';
+import 'ListsPage.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -522,14 +523,29 @@ class _MyHomePageState extends State<MyHomePage> {
         body: new Center(
           child: Column(
             children: <Widget>[
-              IconButton(
-                color: Colors.orange,
+              Row(
+                children: <Widget>[
+                  IconButton(
+                    color: Colors.orange,
 //              highlightColor: Colors.blueAccent,
 //              splashColor: Colors.red,
-                icon: Icon(Icons.refresh),
-                iconSize: 44,
-                onPressed: randomizeData,
+                    icon: Icon(Icons.refresh),
+                    iconSize: 44,
+                    onPressed: randomizeData,
+                  ),
+                  RaisedButton(
+
+                    child: Text('Open Lists screen'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ListsPage() ),
+                      );
+                    },
+                  ),
+                ],
               ),
+
               chartWidget,
               Container(
                 width: screenWidth * 0.9,
@@ -579,6 +595,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
+                heroTag: "Add Data button", /// add 'heroTag' to eliminate error 'There are multiple heroes that share the same tag within a subtree'
                 icon: Icon(Icons.add),
                 label: Text('addData'),
                 backgroundColor: Colors.red,
@@ -588,6 +605,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: FloatingActionButton.extended(
+                heroTag: " Increment Data button",
                 icon: Icon(Icons.add),
                 label: Text('increment line'),
                 onPressed: handleIncrementButtonPress,
